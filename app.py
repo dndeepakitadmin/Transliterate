@@ -133,8 +133,8 @@ def process_txt(uploaded_file, source_script, target_script, target_lang_code):
 # ------------------------------
 # STREAMLIT UI
 # ------------------------------
-st.set_page_config(page_title="Multi-Language Transliterator + Translator", layout="wide")
-st.title("🌍 Multi-Language Transliterator + Translator")
+st.set_page_config(page_title="Multi-Language Translator and later Transliterator ", layout="wide")
+st.title("🌍 Multi-Language Transliterator")
 
 uploaded_file = st.file_uploader("📂 Upload a file", type=["pptx", "docx", "xlsx", "xls", "csv", "txt"])
 source_lang = st.selectbox("Select Source Language", list(script_codes.keys()))
