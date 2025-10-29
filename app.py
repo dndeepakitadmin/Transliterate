@@ -133,16 +133,19 @@ def process_txt(uploaded_file, source_script, target_script, target_lang_code):
 # ------------------------------
 # STREAMLIT UI
 # ------------------------------
-st.set_page_config(page_title="Multi-Language Translator and later Transliterator ", layout="wide")
-st.title("🌍 Multi-Language Transliterator")
+st.set_page_config(page_title="Multi-Language Translator + Transliterator", layout="wide")
+st.title("🌍 Multi-Language Transliterator + Translator")
 
 uploaded_file = st.file_uploader("📂 Upload a file", type=["pptx", "docx", "xlsx", "xls", "csv", "txt"])
+st.markdown("**OR**")
+plain_text_input = st.text_area("📝 Or enter plain text here (no file needed):")
+
 source_lang = st.selectbox("Select Source Language", list(script_codes.keys()))
 target_lang = st.selectbox("Select Target Language", list(script_codes.keys()))
 
 if st.button("🚀 Transliterate + Translate"):
-    if not uploaded_file:
-        st.warning("Please upload a file first.")
+    if not uploaded_file and not plain_text_input.strip():
+        st.warning("Please upload a file or enter text.")
     elif source_lang == target_lang:
         st.warning("Source and target languages must be different.")
     else:
@@ -150,24 +153,41 @@ if st.button("🚀 Transliterate + Translate"):
             source_script = script_codes[source_lang]
             target_script = script_codes[target_lang]
             target_lang_code = translation_lang_codes[target_lang]
-            ext = os.path.splitext(uploaded_file.name)[-1].lower()
 
             try:
-                if ext == ".pptx":
-                    output_path = process_pptx(uploaded_file, source_script, target_script, target_lang_code)
-                elif ext == ".docx":
-                    output_path = process_docx(uploaded_file, source_script, target_script, target_lang_code)
-                elif ext in [".xls", ".xlsx", ".csv"]:
-                    output_path = process_excel_csv(uploaded_file, source_script, target_script, target_lang_code, ext)
-                elif ext == ".txt":
-                    output_path = process_txt(uploaded_file, source_script, target_script, target_lang_code)
-                else:
-                    st.error("Unsupported file format.")
-                    st.stop()
+                if uploaded_file:
+                    ext = os.path.splitext(uploaded_file.name)[-1].lower()
+                    if ext == ".pptx":
+                        output_path = process_pptx(uploaded_file, source_script, target_script, target_lang_code)
+                    elif ext == ".docx":
+                        output_path = process_docx(uploaded_file, source_script, target_script, target_lang_code)
+                    elif ext in [".xls", ".xlsx", ".csv"]:
+                        output_path = process_excel_csv(uploaded_file, source_script, target_script, target_lang_code, ext)
+                    elif ext == ".txt":
+                        output_path = process_txt(uploaded_file, source_script, target_script, target_lang_code)
+                    else:
+                        st.error("Unsupported file format.")
+                        st.stop()
 
-                st.success("✅ Translation + Transliteration completed!")
-                with open(output_path, "rb") as f:
-                    st.download_button("⬇️ Download Result", f, file_name=output_path)
+                    st.success("✅ File Translation + Transliteration completed!")
+                    with open(output_path, "rb") as f:
+                        st.download_button("⬇️ Download Result", f, file_name=output_path)
+
+                elif plain_text_input.strip():
+                    lines = plain_text_input.split('\n')
+                    result_lines = []
+                    for line in lines:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        translit_line = transliterate_text(line, source_script, target_script)
+                        translated_line = translate_text(line, target_lang_code)
+                        result_lines.append(f"{translit_line}\n{translated_line}\n")
+
+                    result_text = "\n".join(result_lines)
+                    # Display as plain text (non-editable)
+                    st.markdown(f"### 📜 Result:\n```\n{result_text}\n```")
+                    st.download_button("⬇️ Download Result as TXT", result_text.encode('utf-8'), "translated_text.txt")
 
             except Exception as e:
                 st.error(f"❌ Error: {e}")
