@@ -6,3 +6,4 @@ pandas
 indic-transliteration
 openpyxl
 xlrd
+lxml
